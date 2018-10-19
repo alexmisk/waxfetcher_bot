@@ -34,7 +34,7 @@ def send_record_updates(bot, job):
         rec_price = record.find_all('div')[1].text
         rec_link = 'http://long-play.ru' + record['href']
 
-        message = '[{rec_artist} — {rec_title}]({rec_link}) {rec_price}'.format(rec_artist=rec_artist, 
+        message = '[{rec_artist} — {rec_title}]({rec_link})\n{rec_price}'.format(rec_artist=rec_artist, 
                                                                                   rec_title=rec_title, 
                                                                                   rec_price=rec_price, 
                                                                                   rec_link=rec_link)
