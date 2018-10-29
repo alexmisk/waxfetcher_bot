@@ -6,16 +6,11 @@ import requests
 import bs4
 import sys
 import time
-from dotenv import load_dotenv
 
 # setup logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO)
-
-# setup env
-load_dotenv()
-
 
 class TelegramRecordBot:
 
@@ -58,11 +53,12 @@ class TelegramRecordBot:
 
         for record in longPlayStore.new_records:
 
-            message = '[{artist} — {title}]({link})\n{price}'.format(artist=record['artist'],
-                                                                      title=record['title'],
-                                                                      link=record['link'],
-                                                                      price=record['price']
-                                                                      )
+            message = '[{artist} — {title}]({link})\n{price}'.format(
+                                                                     artist=record['artist'],
+                                                                     title=record['title'],
+                                                                     link=record['link'],
+                                                                     price=record['price']
+                                                                    )
 
             bot.send_photo(chat_id=self.chat_id,
                            photo=record['picture']
@@ -107,7 +103,8 @@ class RecordStore:
         # Parse an unparsed record pool
         for record in self.new_records_unparsed:
             self.new_records.append(
-                {'artist': record.h3.text,
+                {
+                 'artist': record.h3.text,
                  'title': record.p.text,
                  'picture': 'http://long-play.ru' + record.find_all("div")[0].contents[0]["src"],
                  'price': record.find_all('div')[1].text,
