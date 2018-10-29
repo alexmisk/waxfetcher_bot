@@ -42,11 +42,13 @@ class TelegramRecordBot:
 
     def send_records_count(self, bot, update):
         bot.send_message(
-            chat_id=self.chat_id,
-            text="Counting LPs, hang on...")
+             chat_id=self.chat_id,
+             text="Counting LPs, hang on..."
+                        )
         bot.send_message(
-            chat_id=self.chat_id,
-            text="long-play.ru has {} EDM records in the store for the moment".format(str(longPlayStore.get_records_count())))
+             chat_id=self.chat_id,
+             text="long-play.ru has {} EDM records in the store for the moment".format(str(longPlayStore.get_records_count()))
+                        )
 
     def send_record_updates(self, bot, job):
         longPlayStore.get_updates()
@@ -95,7 +97,6 @@ class RecordStore:
     def get_updates(self) -> None:
         """Return a set of new LPs"""
         self.updated_record_pool = self.get_records_from_site()
-        self.initial_record_pool.pop()
         self.new_records_unparsed = self.updated_record_pool.difference(
             self.initial_record_pool)
         self.new_records = []
@@ -117,40 +118,3 @@ class RecordStore:
 
 waxfetcher = TelegramRecordBot()
 longPlayStore = RecordStore()
-
-
-
-"""
-
-
-def send_record_updates(bot, job):
-
-    for record in longPlayStore.get_updates():
-        rec_artist=record.h3.text
-        rec_title=record.p.text
-        rec_picture='http://long-play.ru' + \
-            record.find_all('div')[0].contents[0]['src']
-        rec_price=record.find_all('div')[1].text
-        rec_link='http://long-play.ru' + record['href']
-
-        message='[{rec_artist} — {rec_title}]({rec_link})\n{rec_price}'.format(rec_artist=rec_artist,
-                                                                                 rec_title=rec_title,
-                                                                                 rec_price=rec_price,
-                                                                                 rec_link=rec_link)
-        bot.send_photo(chat_id=chat_id,
-                       photo=rec_picture)
-
-        bot.send_message(chat_id=chat_id,
-                         text=message,
-                         parse_mode='Markdown',
-                         disable_web_page_preview=True)
-
-
-
-
-
-
-
-
-
-"""
