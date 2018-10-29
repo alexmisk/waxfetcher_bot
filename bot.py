@@ -15,42 +15,51 @@ logging.basicConfig(
 class TelegramRecordBot:
 
     def __init__(self):
-
+        
+        # setup bot params
         self.token = environ['BOT_TOKEN']
         self.chat_id = environ['CHAT_ID']
         self.fetch_interval = int(environ['FETCH_INTERVAL'])
-
+        
+        # general setup for recurring jobs & command handling
         self.updater = Updater(token=self.token)
         self.dispatcher = self.updater.dispatcher
         self.job = self.updater.job_queue
 
-        self.reccount_handler = CommandHandler(
-            'count', self.send_records_count)
+        # setup command handlers
+        self.reccount_handler = CommandHandler('count', self.send_records_count)
         self.start_handler = CommandHandler('start', self.start)
         self.dispatcher.add_handler(self.reccount_handler)
         self.dispatcher.add_handler(self.start_handler)
+        
+        # setup bot jobs
         self.job.run_once(self.greet, 0)
         self.job.run_repeating(self.send_record_updates,
-                               interval=self.fetch_interval, first=30)
+                               interval=self.fetch_interval, 
+                               first=30)
+        
+        # start bot
         self.updater.start_polling()
-
-    def start(self, bot, update):
-        bot.send_message(chat_id=self.chat_id, text="Hi!")
-
-    def greet(self, bot, job):
+    
+    def greet(self, bot, job) -> None:
+        """Greet on bot start"""
         bot.send_message(chat_id=self.chat_id, text="Waxfetcher started")
 
-    def send_records_count(self, bot, update):
-        bot.send_message(
-             chat_id=self.chat_id,
-             text="Counting LPs, hang on..."
-                        )
-        bot.send_message(
-             chat_id=self.chat_id,
-             text="long-play.ru has {} EDM records in the store for the moment".format(str(longPlayStore.get_records_count()))
-                        )
+    def start(self, bot, update) -> None:
+        """/start command"""
+        bot.send_message(chat_id=self.chat_id, text="Hi!")
 
-    def send_record_updates(self, bot, job):
+    def send_records_count(self, bot, update) -> None:
+        """/count command"""
+        bot.send_message(
+             chat_id=self.chat_id,
+             text="Counting LPs, hang on...")
+        bot.send_message(
+             chat_id=self.chat_id,
+             text="long-play.ru has {} EDM records in the store for the moment".format(str(longPlayStore.get_records_count())))
+    
+    def send_record_updates(self, bot, job) -> None:
+        """Core function: send record updates"""
         longPlayStore.get_updates()
 
         for record in longPlayStore.new_records:
@@ -59,12 +68,10 @@ class TelegramRecordBot:
                                                                      artist=record['artist'],
                                                                      title=record['title'],
                                                                      link=record['link'],
-                                                                     price=record['price']
-                                                                    )
+                                                                     price=record['price'])
 
             bot.send_photo(chat_id=self.chat_id,
-                           photo=record['picture']
-                          )
+                           photo=record['picture'])
 
             bot.send_message(chat_id=self.chat_id,
                              text=message,
@@ -74,7 +81,7 @@ class TelegramRecordBot:
 
 class RecordStore:
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Get an initial list of records"""
         self.fetch_url = environ['FETCH_URL']
         self.initial_record_pool = self.get_records_from_site()
@@ -101,7 +108,7 @@ class RecordStore:
             self.initial_record_pool)
         self.new_records = []
 
-        # Parse an unparsed record pool
+        # parse an unparsed record pool
         for record in self.new_records_unparsed:
             self.new_records.append(
                 {
