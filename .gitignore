@@ -106,3 +106,8 @@ venv.bak/
 .DS_store
 .DS_Store
 recordpool.txt
+.vscode/launch.json
+.DS_Store
+.DS_Store
+.vscode/launch.json
+.DS_Store

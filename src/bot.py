@@ -17,13 +17,10 @@ class TelegramRecordBot:
     def __init__(self):
         
         # setup bot params
-        try:
-            self.token = environ['BOT_TOKEN']
-            self.chat_id = environ['CHAT_ID']
-            self.fetch_interval = int(environ['FETCH_INTERVAL'])
-        except:
-            logging.error('Wrong ENV parameters')
-
+        self.token = environ['BOT_TOKEN']
+        self.chat_id = environ['CHAT_ID']
+        self.fetch_interval = int(environ['FETCH_INTERVAL'])
+        
         # general setup for recurring jobs & command handling
         self.updater = Updater(token=self.token)
         self.dispatcher = self.updater.dispatcher
