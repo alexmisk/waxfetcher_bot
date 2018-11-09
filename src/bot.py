@@ -118,7 +118,6 @@ class RecordStore:
     def get_updates(self) -> None:
         """Return a set of new LPs"""
         self.updated_record_pool = self.get_records_from_site()
-        self.initial_record_pool.pop()
         self.new_records_unparsed = self.updated_record_pool.difference(
             self.initial_record_pool)
         self.new_records = []
