@@ -7,10 +7,12 @@ import bs4
 import sys
 import time
 
+
 # setup logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO)
+
 
 class TelegramRecordBot:
 
@@ -38,8 +40,9 @@ class TelegramRecordBot:
                                interval=self.fetch_interval, 
                                first=30)
         
-        # start bot
-        self.updater.start_polling()
+    def start_pooling(self):
+        """Start bot"""
+        self.updater.start_polling()    
     
     def greet(self, bot, job) -> None:
         """Greet on bot start"""
@@ -48,6 +51,10 @@ class TelegramRecordBot:
     def start(self, bot, update) -> None:
         """/start command"""
         bot.send_message(chat_id=self.chat_id, text="Hi!")
+
+    def stop(self, bot, update) -> None:
+        """Bot exit handler"""
+        bot.send_message(chat_id=self.chat_id, text="Bye")    
 
     def send_records_count(self, bot, update) -> None:
         """/count command"""
@@ -63,12 +70,19 @@ class TelegramRecordBot:
         longPlayStore.get_updates()
 
         for record in longPlayStore.new_records:
+            
+            record_info = longPlayStore.get_record_details(record['link'])
+            
 
-            message = '[{artist} — {title}]({link})\n{price}'.format(
-                                                                     artist=record['artist'],
-                                                                     title=record['title'],
-                                                                     link=record['link'],
-                                                                     price=record['price'])
+            message = '[{artist} — {title}]({link})\n\n'.format(artist=record['artist'],
+                                                                title=record['title'],
+                                                                link=record['link'])
+            
+            message += 'Style: {style}\n'.format(style=record_info['style'])
+
+            message += '{price}'.format(price=record['price'])
+                                                                     
+
 
             bot.send_photo(chat_id=self.chat_id,
                            photo=record['picture'])
@@ -104,6 +118,7 @@ class RecordStore:
     def get_updates(self) -> None:
         """Return a set of new LPs"""
         self.updated_record_pool = self.get_records_from_site()
+        self.initial_record_pool.pop()
         self.new_records_unparsed = self.updated_record_pool.difference(
             self.initial_record_pool)
         self.new_records = []
@@ -111,7 +126,7 @@ class RecordStore:
         # parse an unparsed record pool
         for record in self.new_records_unparsed:
             self.new_records.append(
-                {
+                 {
                  'artist': record.h3.text,
                  'title': record.p.text,
                  'picture': 'http://long-play.ru' + record.find_all("div")[0].contents[0]["src"],
@@ -122,6 +137,14 @@ class RecordStore:
 
         self.initial_record_pool = self.updated_record_pool
 
+    def get_record_details(self, record_link):
+        """"""
+        details = bs4.BeautifulSoup(requests.get(record_link).text, features="lxml").select('.product-info-item')
+        return {'style': details[1].find_all('span')[0].contents[0].strip()}
+        
+        
+
 
 waxfetcher = TelegramRecordBot()
+waxfetcher.start_pooling()
 longPlayStore = RecordStore()
